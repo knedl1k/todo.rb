@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 
-# 
+# (C) 2023 SKTM307 <sktm307@proton.me>
 
 require 'json'
 
