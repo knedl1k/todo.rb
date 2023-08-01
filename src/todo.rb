@@ -104,7 +104,6 @@ class Task
         @tasks.delete_at x[0]
         return self
       end
-      i=x.pop
       task=@tasks[x.shift]
       if task==nil
         STDERR.print("invalid index\n")
