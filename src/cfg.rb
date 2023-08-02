@@ -4,11 +4,11 @@
 
 ### SETTINGS ###
 
-COLOR=Color.new
+COLOR=Color.new unless defined? COLOR
 
 class Settings
-  def initialize
-    @settings={
+  def settings
+    {
       todo_file:     "#{ENV["HOME"]}/.local/share/todo.json",
       fallback_cmd:  'list',
       colors:        true,
@@ -33,7 +33,7 @@ class Settings
   end
 end
 
-SETTINGS=Settings.new
+SETTINGS=Settings.new unless defined? SETTINGS
 
 #
 # custom command example

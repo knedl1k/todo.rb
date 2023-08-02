@@ -9,23 +9,19 @@ require './default.rb'
 
 class Main
   def initialize
-    @commands=commands()
-    command=getArg default: SETTINGS[:fallback_cmd]
+    command=commands()[getArg default: SETTINGS[:fallback_cmd]]||error(:cmd)
     @tasks=Task.new(readTasks())
-    if not @commands.key?command
-      error :cmd
+    if command[:method].is_a? Method
+      command[:method].call
+    else
+      error :mtd
     end
-    method=@commands[command][:method]
-    if method.is_a? NilClass
-      error :cmd
-    end
-    method.call
-    if @commands[command][:w]
+    if command[:w]
       writeTasks @tasks.getHash
     end
   end
 
-  def getArg(prompt=nil,type: :normal,default: nil, required: false)
+  def getArg(prompt=nil,type: :normal,default: nil,required: false)
     if not ARGV.empty?
       x=ARGV.shift
     elsif not default.is_a?NilClass
@@ -42,8 +38,6 @@ class Main
           error :eof
         rescue Interrupt
           error :int
-        rescue Exception
-          error nil
         end
       end while x.empty? and required
     end
@@ -61,20 +55,21 @@ class Main
 
   def readTasks
     begin
-    file=open(SETTINGS[:todo_file],'r')
+      file=open(SETTINGS[:todo_file],'r')
+    rescue Errno::ENOENT
+      return {}
+    end
     begin
       tasks=JSON.parse file.read
     rescue JSON::ParserError
       tasks={}
-    end
-    file.close
-    rescue Errno::ENOENT
-      tasks={}
+    ensure
+      file.close
     end
     return tasks
   end
 
-  def writeTasks tasks
+  def writeTasks(tasks)
     file=open(SETTINGS[:todo_file],'w')
     file.print(JSON.generate(tasks))
     file.close
@@ -83,11 +78,12 @@ end
 
 def error(e)
   error={
-    idx: {message: "invalid index",   exit: 1   },
-    cmd: {message: "invalid command", exit: 2   },
-    int: {message: "interrupted",     exit: 3   },
-    eof: {message: "end of file",     exit: 4   },
-  }[e]|| {message: "unknown error",   exit: -1  } 
+    idx: {message: "invalid index",               exit: 1  },
+    cmd: {message: "invalid command",             exit: 2  },
+    int: {message: "interrupted",                 exit: 3  },
+    eof: {message: "end of file",                 exit: 4  },
+    mtd: {message: "method has not been defined", exit: 5  },
+  }[e]|| {message: "unknown error",               exit: -1 } 
   STDERR.print SETTINGS[:style][:text][:error]+error[:message]+"\n"
   if error[:exit].is_a?(Integer)then
     exit error[:exit]
@@ -99,6 +95,7 @@ end
 
 begin
   require ENV['HOME']+"/.config/todo/cfg.rb"
+  require "./cfg.rb"
 rescue LoadError
   # user config was not loaded
 end

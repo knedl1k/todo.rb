@@ -70,17 +70,17 @@ class Main
   end
 
   def help
-    message=\
-    "Usage: #{$0} [command] [arguments]\n"\
-    "a simple commandline todo app written in Ruby\n"\
-    "   \n"
-    for command in @commands.keys
-      message+=sprintf "  %7s - %s\n",command,@commands[command][:help] # TODO: change to dynamic length
+    commands=commands()
+    message="Usage: #{$0} [command] [arguments]\n"+
+            "a simple commandline todo app written in Ruby\n\n"
+    max=commands.keys.map(&:length).max
+    for command in commands.keys
+      message+=sprintf "  %#{max}s - %s\n",command,commands[command][:help]||'missing description'
     end
     if not SETTINGS[:fallback_cmd].is_a? NilClass
-      message+="\nif no command is supplied \"#{SETTINGS[:fallback_cmd]}\" command will be used\n"
+      message+="\nif no command is supplied '#{SETTINGS[:fallback_cmd]}' command will be used\n"
     end
-    print message
+    STDOUT.print message
   end
 end
 

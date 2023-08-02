@@ -85,8 +85,8 @@ class Task
     }
   end
 
-  def print(i=nil,depth=0) # TODO: prettify
-    digits =3
+  def print(i=nil,depth=0,digits=1) # TODO: prettify
+    digits+=2
     status =@chck ? :check : :uncheck
     check  =SETTINGS[:style][:color][status]+SETTINGS[:style][:text][status]+COLOR[:reset]
     box_l  =SETTINGS[:style][:color][:box]  +'['                            +COLOR[:reset]
@@ -102,14 +102,15 @@ class Task
 
     text   = padding+number+box_l+check+box_r+' '+name+"\n"+
              ((@desc.is_a?String and not @desc.empty?)?
-             padding+comment_padding+comment+"\n":'')
+             padding+comment_padding+'"'+comment+'"'+"\n":'')
     STDOUT.print text
   end
 
   def listSubTasks(depth=0)
+    max_digits=@tasks.count.digits.count
     @tasks.each.with_index(1) {
       |task,i|
-      task.print i,depth
+      task.print i,depth,max_digits
       task.listSubTasks depth+1
     }
   end

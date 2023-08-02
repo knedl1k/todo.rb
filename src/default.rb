@@ -38,8 +38,14 @@ class Color
 end
 
 class Settings
+
   def initialize
-    @settings={
+    @settings=settings()
+    setColors()
+  end
+
+  def settings
+    {
       todo_file:     "#{ENV["HOME"]}/.local/share/todo.json",
       fallback_cmd:  'list',
       colors:        true,
@@ -62,6 +68,15 @@ class Settings
       },
     }
   end
+
+  def setColors
+    if not @settings[:colors]
+      for key in @settings[:style][:color].keys
+        @settings[:style][:color][key]=COLOR[:none]
+      end
+    end
+  end
+
   def [](x)
     @settings[x]
   end
