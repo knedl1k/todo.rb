@@ -5,14 +5,7 @@
 require 'json'
 require './commands.rb'
 require './default.rb'
-begin
-  require './cfg.rb'
-rescue LoadError
-  # user config was not loaded
-end
 
-COLOR=Color.new unless defined? COLOR
-SETTINGS=Settings.new unless defined? SETTINGS
 
 ### CLASSES ###
 
@@ -241,6 +234,15 @@ end
 
 
 ### MAIN ###
+
+begin
+  require './cfg.rb'
+rescue LoadError
+  # user config was not loaded
+end
+
+COLOR=Color.new unless defined? COLOR
+SETTINGS=Settings.new unless defined? SETTINGS
 
 main=Main.new
 exit 0
