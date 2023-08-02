@@ -5,7 +5,11 @@
 require 'json'
 require './commands.rb'
 require './default.rb'
-require './cfg.rb'
+begin
+  require './cfg.rb'
+rescue LoadError
+  # user config was not loaded
+end
 
 COLOR=Color.new unless defined? COLOR
 SETTINGS=Settings.new unless defined? SETTINGS
