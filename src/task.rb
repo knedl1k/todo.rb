@@ -86,25 +86,24 @@ class Task
   end
 
   def print(i=nil,depth=0) # TODO: prettify
-      n=@name
-      d=@desc
-      c=@chck?
-        SETTINGS[:style][:color][:check]+SETTINGS[:style][:text][:check]+COLOR[:reset]:
-        SETTINGS[:style][:color][:uncheck]+SETTINGS[:style][:text][:uncheck]+COLOR[:reset]
-      padding = "   #{SETTINGS[:style][:color][:line]}|#{COLOR[:reset]}" * depth
-      STDOUT.print padding
-      if i.is_a?Integer
-        STDOUT.printf SETTINGS[:style][:color][:index]+'%3d'+
-                      SETTINGS[:style][:color][:colon]+':'+COLOR[:reset],i
-      end
-      STDOUT.print SETTINGS[:style][:color][:box]+'['+COLOR[:reset]+
-                    c+
-                    SETTINGS[:style][:color][:box]+']'+COLOR[:reset]+' '+
-                    SETTINGS[:style][:color][:name]+n+COLOR[:reset]+"\n"
-      if d.is_a?String and not d.empty?
-        STDOUT.print padding
-        STDOUT.printf "        #{SETTINGS[:style][:color][:desc]}\"%s\"#{COLOR[:reset]}\n",d
-      end
+    digits =3
+    status =@chck ? :check : :uncheck
+    check  =SETTINGS[:style][:color][status]+SETTINGS[:style][:text][status]+COLOR[:reset]
+    box_l  =SETTINGS[:style][:color][:box]  +'['                            +COLOR[:reset]
+    box_r  =SETTINGS[:style][:color][:box]  +']'                            +COLOR[:reset]
+    name   =SETTINGS[:style][:color][:name] +@name                          +COLOR[:reset]
+    comment=SETTINGS[:style][:color][:desc] +@desc                          +COLOR[:reset]
+    colon  =SETTINGS[:style][:color][:line] +'|'                            +COLOR[:reset]
+    number =(i.is_a?Integer)?
+            SETTINGS[:style][:color][:index]+sprintf("%#{digits}d",i)       +COLOR[:reset]+
+            SETTINGS[:style][:color][:colon]+':'                            +COLOR[:reset]:''
+    comment_padding=' '*(digits+1+1+SETTINGS[:style][:text][status].length+1+1)
+    padding=(' '*digits+colon)*depth
+
+    text   = padding+number+box_l+check+box_r+' '+name+"\n"+
+             ((@desc.is_a?String and not @desc.empty?)?
+             padding+comment_padding+comment+"\n":'')
+    STDOUT.print text
   end
 
   def listSubTasks(depth=0)
