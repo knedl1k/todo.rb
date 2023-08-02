@@ -174,7 +174,15 @@ class Main
         if prompt.is_a?String
           print "#{prompt}: "
         end
-        x=STDIN.readline.chomp
+        begin
+          x=STDIN.readline.chomp
+        rescue EOFError
+          error :eof
+        rescue Interrupt
+          error :int
+        rescue Exception
+          error nil
+        end
       end while x.empty? and required
     end
     case type
@@ -213,9 +221,11 @@ end
 
 def error(e)
   error={
-    idx: {message: "invalid index",   exit: 1 },
-    cmd: {message: "invalid command", exit: 2 },
-  }[e]|| {message: "unknown error",   exit: -1} 
+    idx: {message: "invalid index",   exit: 1   },
+    cmd: {message: "invalid command", exit: 2   },
+    int: {message: "interrupted",     exit: 3   },
+    eof: {message: "end of file",     exit: 4   },
+  }[e]|| {message: "unknown error",   exit: -1  } 
   STDERR.print SETTINGS[:style][:text][:error]+error[:message]+"\n"
   if error[:exit].is_a?(Integer)then
     exit error[:exit]
