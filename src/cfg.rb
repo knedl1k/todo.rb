@@ -35,3 +35,18 @@ end
 
 SETTINGS=Settings.new
 
+#
+# custom command example
+#
+#class Main
+#  alias commands_old commands
+#  def commands
+#    commands_old().merge!(
+#      'my_custom_command' => {method: method(:command),w:false,help: 'my custom command'},
+#    )
+#  end
+#  def command
+#    STDOUT.print "something\n"
+#  end
+#end
+

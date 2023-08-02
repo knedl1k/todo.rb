@@ -145,18 +145,9 @@ end
 
 class Main
   def initialize
-    @commands={
-      'get'    => {method: method(:get)     ,w: false ,help: 'shows item at [index]'},
-      'getsub' => {method: method(:getsub)  ,w: false ,help: 'shows subitems of [index]'},
-      'getall' => {method: method(:getall)  ,w: false ,help: 'shows item and it\'s subitems at [index]'},
-      'list'   => {method: method(:list)    ,w: false ,help: 'lists all items'},
-      'add'    => {method: method(:add)     ,w: true  ,help: 'adds item with [name] and [description]'},
-      'addsub' => {method: method(:addsub)  ,w: true  ,help: 'adds item under [index] with [name] and [description]'},
-      'check'  => {method: method(:check)   ,w: true  ,help: 'checks item at [index]'},
-      'uncheck'=> {method: method(:uncheck) ,w: true  ,help: 'unchecks item at [index]'},
-      'remove' => {method: method(:remove)  ,w: true  ,help: 'removes item at [index]'},
-      'help'   => {method: method(:help)    ,w: false ,help: 'shows this help menu'},
-    }
+
+    @commands=commands()
+
     command=getArg default: SETTINGS[:fallback_cmd]
     @tasks=Task.new(readTasks())
     if not @commands.key?command
@@ -230,7 +221,6 @@ def error(e)
     exit error[:exit]
   end
 end
-
 
 
 ### MAIN ###
