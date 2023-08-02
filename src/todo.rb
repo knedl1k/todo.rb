@@ -3,36 +3,7 @@
 # (C) 2023 SKTM307 <sktm307@proton.me>
 
 require 'json'
-
-### SETTINGS ###
-
-TODO_FILE="#{ENV["HOME"]}/.local/share/todo.json"
-CHCK_SYMBOL='X'
-UCHCK_SYMBOL='O'
-COLORS=true
-DEFAULT='list'
-
-if COLORS
-  COL_NUM  ="\e[01;36m"
-  COL_NAME ="\e[01;32m"
-  COL_DESC ="\e[00;37m"
-  COL_CHCK ="\e[01;31m"
-  COL_UCHCK="\e[01;34m"
-  COL_BOX  ="\e[01;37m"
-  COL_COL  ="\e[01;37m"
-  COL_LINE ="\e[01;37m"
-  COL_RESET="\e[0m"
-else
-  COL_NUM  =''
-  COL_NAME =''
-  COL_DESC =''
-  COL_CHCK =''
-  COL_UCHCK=''
-  COL_BOX  =''
-  COL_COL  =''
-  COL_LINE =''
-  COL_RESET=''
-end
+require './cfg.rb'
 
 ### CLASSES ###
 
@@ -53,11 +24,10 @@ class Task
 
   def [](x) # TODO: prettify
     if x.is_a? Numeric
-      if x>=0 and x<@tasks.count() 
-        return @tasks[x]
+      if x>=0 and x<@tasks.count()
+        return @tasks[x] 
       else
-        STDERR.print("invalid index\n")
-        exit 1
+        error INVALID_IDX_ERR
       end
     end
     if x.is_a?Array
@@ -65,17 +35,16 @@ class Task
         return self
       end
       i=x.shift
-      if i>=0 and i<@tasks.count() 
+      if i>=0 and i<@tasks.count()
         task=@tasks[i]
       else
-        STDERR.print("invalid index\n")
-        exit 1
+        error INVALID_IDX_ERR
       end
+
       if task==nil
-        STDERR.print("invalid index\n")
-        exit 1
+        error INVALID_IDX_ERR
       end
-      task[x]
+      return task[x]
     end
   end
 
@@ -91,7 +60,7 @@ class Task
 
   def +(x)
     @tasks+=[Task.new(x)]
-    self
+    return self
   end
 
   def -(x)
@@ -106,12 +75,11 @@ class Task
       end
       task=@tasks[x.shift]
       if task==nil
-        STDERR.print("invalid index\n")
-        exit 1
+        error INVALID_IDX_ERR
       end
       task-=x
     end
-    self
+    return self
   end
 
   def getHash
@@ -126,11 +94,8 @@ class Task
   def print(i=nil,depth=0) # TODO: prettify
       n=@name
       d=@desc
-      if @chck
-        c=COL_CHCK+CHCK_SYMBOL+COL_RESET
-      else
-        c=COL_UCHCK+UCHCK_SYMBOL+COL_RESET
-      end
+      c= @chck ? COL_CHCK+CHCK_SYMBOL+COL_RESET : COL_UCHCK+UCHCK_SYMBOL+COL_RESET 
+
       padding = "   #{COL_LINE}|#{COL_RESET}" * depth
       printf padding
       if i.is_a?Integer
@@ -154,8 +119,7 @@ class Task
   def getTask(idx)
     task=@tasks[idx.shift]
     if task==nil
-      STDERR.print("invalid task index\n")
-      exit 1
+      error INVALID_TASK_IDX_ERR
     end
   end
 
@@ -186,12 +150,14 @@ class Main
       'remove' => {method: method(:remove)  ,w: true  ,help: 'removes item at [index]'},
       'help'   => {method: method(:help)    ,w: false ,help: 'shows this help menu'},
     }
-    command=getArg default: DEFAULT
+    command=getArg default: FALLBACK_CMD
     @tasks=Task.new(readTasks())
+    if not @commands.key?command
+      error INVALID_CMD_ERR
+    end
     method=@commands[command][:method]
     if method.is_a? NilClass
-      STDERR.print("invalid command\n")
-      exit 1
+      error INVALID_CMD_ERR
     end
     method.call
     if @commands[command][:w]
@@ -237,7 +203,7 @@ class Main
     rescue Errno::ENOENT
       tasks={}
     end
-    tasks
+    return tasks
   end
 
   def writeTasks tasks
@@ -304,13 +270,13 @@ class Main
   def help
     message=\
     "Usage: #{$0} [command] [arguments]\n"\
-    "a simple commandline todo app written in ruby\n"\
+    "a simple commandline todo app written in Ruby\n"\
     "   \n"
     for command in @commands.keys
       message+=sprintf "  %7s - %s\n",command,@commands[command][:help] # TODO: change to dynamic length
     end
-    if not DEFAULT.is_a? NilClass
-      message+="\nif no command is supplied \"#{DEFAULT}\" command will be used\n"
+    if not FALLBACK_CMD.is_a? NilClass
+      message+="\nif no command is supplied \"#{FALLBACK_CMD}\" command will be used\n"
     end
     print message
   end
