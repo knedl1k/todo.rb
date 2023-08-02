@@ -3,7 +3,8 @@
 # (C) 2023 SKTM307 <sktm307@proton.me>
 
 require 'json'
-require './cfg.rb'
+require './utils.rb'
+require './commands.rb'
 
 ### CLASSES ###
 
@@ -27,7 +28,7 @@ class Task
       if x>=0 and x<@tasks.count()
         return @tasks[x] 
       else
-        error INVALID_IDX_ERR
+        error :idx
       end
     end
     if x.is_a?Array
@@ -38,11 +39,11 @@ class Task
       if i>=0 and i<@tasks.count()
         task=@tasks[i]
       else
-        error INVALID_IDX_ERR
+        error :idx
       end
 
       if task==nil
-        error INVALID_IDX_ERR
+        error :idx
       end
       return task[x]
     end
@@ -75,7 +76,7 @@ class Task
       end
       task=@tasks[x.shift]
       if task==nil
-        error INVALID_IDX_ERR
+        error :idx
       end
       task-=x
     end
@@ -94,17 +95,22 @@ class Task
   def print(i=nil,depth=0) # TODO: prettify
       n=@name
       d=@desc
-      c= @chck ? COL_CHCK+CHCK_SYMBOL+COL_RESET : COL_UCHCK+UCHCK_SYMBOL+COL_RESET 
-
-      padding = "   #{COL_LINE}|#{COL_RESET}" * depth
-      printf padding
+      c=@chck?
+        $settings[:style][:color][:check]+$settings[:style][:text][:check]+$color[:reset]:
+        $settings[:style][:color][:uncheck]+$settings[:style][:text][:uncheck]+$color[:reset]
+      padding = "   #{$settings[:style][:color][:line]}|#{$color[:reset]}" * depth
+      STDOUT.print padding
       if i.is_a?Integer
-        printf "#{COL_NUM}%3d#{COL_RESET}#{COL_COL}:#{COL_RESET} ",i
+        STDOUT.printf $settings[:style][:color][:index]+'%3d'+
+                      $settings[:style][:color][:colon]+':'+$color[:reset],i
       end
-      printf "#{COL_BOX}[#{COL_RESET}%s#{COL_BOX}]#{COL_RESET} #{COL_NAME}%s#{COL_RESET}\n",c,n
+      STDOUT.print $settings[:style][:color][:box]+'['+$color[:reset]+
+                    c+
+                    $settings[:style][:color][:box]+']'+$color[:reset]+
+                    $settings[:style][:color][:name]+n+$color[:reset]+"\n"
       if d.is_a?String and not d.empty?
-        printf padding
-        printf "        #{COL_DESC}\"%s\"#{COL_RESET}\n",d
+        STDOUT.print padding
+        STDOUT.printf "        #{$settings[:style][:color][:desc]}\"%s\"#{$color[:reset]}\n",d
       end
   end
 
@@ -119,7 +125,7 @@ class Task
   def getTask(idx)
     task=@tasks[idx.shift]
     if task==nil
-      error INVALID_TASK_IDX_ERR
+      error :idx
     end
   end
 
@@ -150,14 +156,14 @@ class Main
       'remove' => {method: method(:remove)  ,w: true  ,help: 'removes item at [index]'},
       'help'   => {method: method(:help)    ,w: false ,help: 'shows this help menu'},
     }
-    command=getArg default: FALLBACK_CMD
+    command=getArg default: $settings[:fallback_cmd]
     @tasks=Task.new(readTasks())
     if not @commands.key?command
-      error INVALID_CMD_ERR
+      error :cmd
     end
     method=@commands[command][:method]
     if method.is_a? NilClass
-      error INVALID_CMD_ERR
+      error :cmd
     end
     method.call
     if @commands[command][:w]
@@ -170,7 +176,7 @@ class Main
       x=ARGV.shift
     elsif not default.is_a?NilClass
       return default
-    else
+  else
       x=''
       begin
         if prompt.is_a?String
@@ -193,7 +199,7 @@ class Main
 
   def readTasks
     begin
-    file=open(TODO_FILE,'r')
+    file=open($settings[:todo_file],'r')
     begin
       tasks=JSON.parse file.read
     rescue JSON::ParserError
@@ -207,82 +213,15 @@ class Main
   end
 
   def writeTasks tasks
-    file=open(TODO_FILE,'w')
+    file=open($settings[:todo_file],'w')
     file.print(JSON.generate(tasks))
     file.close
   end
-  
-  ### COMMANDS ###
-
-  def get
-    idx=getArg "index",type: :index
-    task=@tasks[idx]
-    task.print
-    print "subtasks #{task.subTasks}\n"
-  end
-
-  def getsub
-    idx=getArg "index",type: :index
-    task=@tasks[idx]
-    task.listSubTasks
-  end
-
-  def getall
-    idx=getArg "index",type: :index
-    task=@tasks[idx]
-    task.print
-    task.listSubTasks 1
-  end
-
-  def list
-    @tasks.listSubTasks
-  end
-
-  def add
-    name=getArg "name",required: true
-    desc=getArg "description"
-    @tasks+={"name"=>name,"desc"=>desc,"tasks"=>[],"chck"=>false}
-    writeTasks @tasks.getHash
-  end
-
-  def addsub
-    idx=getArg "index",type: :index
-    name=getArg "name",required: true
-    desc=getArg "description"
-    @tasks[idx]+={"name"=>name,"desc"=>desc,"tasks"=>[],"chck"=>false}
-  end
-
-  def check
-    idx=getArg "index",type: :index
-    @tasks[idx].check
-  end
-
-  def uncheck
-    idx=getArg "index",type: :index
-    @tasks[idx].uncheck
-  end
-
-  def remove
-    idx=getArg "index",type: :index
-    @tasks-=idx
-  end
-
-  def help
-    message=\
-    "Usage: #{$0} [command] [arguments]\n"\
-    "a simple commandline todo app written in Ruby\n"\
-    "   \n"
-    for command in @commands.keys
-      message+=sprintf "  %7s - %s\n",command,@commands[command][:help] # TODO: change to dynamic length
-    end
-    if not FALLBACK_CMD.is_a? NilClass
-      message+="\nif no command is supplied \"#{FALLBACK_CMD}\" command will be used\n"
-    end
-    print message
-  end
 end
 
+
 ### MAIN ###
+require './cfg.rb'
 
 main=Main.new
 exit 0
