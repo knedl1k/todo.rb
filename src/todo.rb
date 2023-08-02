@@ -107,7 +107,7 @@ class Task
       end
       STDOUT.print SETTINGS[:style][:color][:box]+'['+COLOR[:reset]+
                     c+
-                    SETTINGS[:style][:color][:box]+']'+COLOR[:reset]+
+                    SETTINGS[:style][:color][:box]+']'+COLOR[:reset]+' '+
                     SETTINGS[:style][:color][:name]+n+COLOR[:reset]+"\n"
       if d.is_a?String and not d.empty?
         STDOUT.print padding
@@ -236,7 +236,7 @@ end
 ### MAIN ###
 
 begin
-  require './cfg.rb'
+  require ENV['HOME']+"/.config/todo/cfg.rb"
 rescue LoadError
   # user config was not loaded
 end
