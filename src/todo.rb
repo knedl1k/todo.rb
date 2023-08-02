@@ -3,8 +3,12 @@
 # (C) 2023 SKTM307 <sktm307@proton.me>
 
 require 'json'
-require './utils.rb'
 require './commands.rb'
+require './default.rb'
+require './cfg.rb'
+
+COLOR=Color.new unless defined? COLOR
+SETTINGS=Settings.new unless defined? SETTINGS
 
 ### CLASSES ###
 
@@ -96,21 +100,21 @@ class Task
       n=@name
       d=@desc
       c=@chck?
-        $settings[:style][:color][:check]+$settings[:style][:text][:check]+$color[:reset]:
-        $settings[:style][:color][:uncheck]+$settings[:style][:text][:uncheck]+$color[:reset]
-      padding = "   #{$settings[:style][:color][:line]}|#{$color[:reset]}" * depth
+        SETTINGS[:style][:color][:check]+SETTINGS[:style][:text][:check]+COLOR[:reset]:
+        SETTINGS[:style][:color][:uncheck]+SETTINGS[:style][:text][:uncheck]+COLOR[:reset]
+      padding = "   #{SETTINGS[:style][:color][:line]}|#{COLOR[:reset]}" * depth
       STDOUT.print padding
       if i.is_a?Integer
-        STDOUT.printf $settings[:style][:color][:index]+'%3d'+
-                      $settings[:style][:color][:colon]+':'+$color[:reset],i
+        STDOUT.printf SETTINGS[:style][:color][:index]+'%3d'+
+                      SETTINGS[:style][:color][:colon]+':'+COLOR[:reset],i
       end
-      STDOUT.print $settings[:style][:color][:box]+'['+$color[:reset]+
+      STDOUT.print SETTINGS[:style][:color][:box]+'['+COLOR[:reset]+
                     c+
-                    $settings[:style][:color][:box]+']'+$color[:reset]+
-                    $settings[:style][:color][:name]+n+$color[:reset]+"\n"
+                    SETTINGS[:style][:color][:box]+']'+COLOR[:reset]+
+                    SETTINGS[:style][:color][:name]+n+COLOR[:reset]+"\n"
       if d.is_a?String and not d.empty?
         STDOUT.print padding
-        STDOUT.printf "        #{$settings[:style][:color][:desc]}\"%s\"#{$color[:reset]}\n",d
+        STDOUT.printf "        #{SETTINGS[:style][:color][:desc]}\"%s\"#{COLOR[:reset]}\n",d
       end
   end
 
@@ -156,7 +160,7 @@ class Main
       'remove' => {method: method(:remove)  ,w: true  ,help: 'removes item at [index]'},
       'help'   => {method: method(:help)    ,w: false ,help: 'shows this help menu'},
     }
-    command=getArg default: $settings[:fallback_cmd]
+    command=getArg default: SETTINGS[:fallback_cmd]
     @tasks=Task.new(readTasks())
     if not @commands.key?command
       error :cmd
@@ -176,7 +180,7 @@ class Main
       x=ARGV.shift
     elsif not default.is_a?NilClass
       return default
-  else
+    else
       x=''
       begin
         if prompt.is_a?String
@@ -199,7 +203,7 @@ class Main
 
   def readTasks
     begin
-    file=open($settings[:todo_file],'r')
+    file=open(SETTINGS[:todo_file],'r')
     begin
       tasks=JSON.parse file.read
     rescue JSON::ParserError
@@ -213,15 +217,26 @@ class Main
   end
 
   def writeTasks tasks
-    file=open($settings[:todo_file],'w')
+    file=open(SETTINGS[:todo_file],'w')
     file.print(JSON.generate(tasks))
     file.close
   end
 end
 
+def error(e)
+  error={
+    idx: {message: "invalid index",   exit: 1 },
+    cmd: {message: "invalid command", exit: 2 },
+  }[e]|| {message: "unknown error",   exit: -1} 
+  STDERR.print SETTINGS[:style][:text][:error]+error[:message]+"\n"
+  if error[:exit].is_a?(Integer)then
+    exit error[:exit]
+  end
+end
+
+
 
 ### MAIN ###
-require './cfg.rb'
 
 main=Main.new
 exit 0

@@ -61,8 +61,8 @@ class Main
     for command in @commands.keys
       message+=sprintf "  %7s - %s\n",command,@commands[command][:help] # TODO: change to dynamic length
     end
-    if not FALLBACK_CMD.is_a? NilClass
-      message+="\nif no command is supplied \"#{FALLBACK_CMD}\" command will be used\n"
+    if not SETTINGS[:fallback_cmd].is_a? NilClass
+      message+="\nif no command is supplied \"#{SETTINGS[:fallback_cmd]}\" command will be used\n"
     end
     print message
   end
