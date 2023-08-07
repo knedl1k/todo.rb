@@ -14,4 +14,4 @@ All items in the list can have a description or/and subitems.
 
 ## License
 See [`LICENSE`](./LICENSE).
-# (C) 2023 SKTM307 & knedl1k
+(C) 2023 SKTM307 & knedl1k
