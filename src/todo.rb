@@ -3,9 +3,9 @@
 # (C) 2023 SKTM307 <sktm307@proton.me>
 
 require 'json'
-require './task.rb'
-require './commands.rb'
-require './default.rb'
+require_relative './task.rb'
+require_relative './commands.rb'
+require_relative './default.rb'
 
 class Main
   def initialize
@@ -95,7 +95,7 @@ end
 
 begin
   require ENV['HOME']+"/.config/todo/cfg.rb"
-  require "./cfg.rb"
+  require_relative "./cfg.rb"
 rescue LoadError
   # user config was not loaded
 end
