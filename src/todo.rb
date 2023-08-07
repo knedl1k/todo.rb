@@ -75,7 +75,7 @@ class Main
     file.close
   end
 end
-
+# if called, exits with an error value and error string
 def error(e)
   error={
     idx: {message: "invalid index",               exit: 1  },

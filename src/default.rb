@@ -1,6 +1,4 @@
-#!/usr/bin/ruby
-
-# utilitary functions and constants
+# default values of constants and settings #
 
 class Color
   def initialize
