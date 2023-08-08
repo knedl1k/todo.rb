@@ -17,17 +17,16 @@ class Task
   end
 
   def [](x) # TODO: prettify
-    if x.is_a? Numeric
+    case x
+    in Numeric
       if x>=0 and x<@tasks.count()
         return @tasks[x] 
       else
         error :idx
       end
-    end
-    if x.is_a?Array
-      if x==[]
-        return self
-      end
+    in []
+      return self
+    in Array
       i=x.shift
       if i>=0 and i<@tasks.count()
         task=@tasks[i]
@@ -43,10 +42,10 @@ class Task
   end
 
   def []=(x,y)
-    if x.is_a?Numeric
+    case x
+    in Numeric
       @tasks[x]=y
-    end
-    if x.is_a?Array
+    in Array
       task=self[x]
       task=y
     end
@@ -58,19 +57,13 @@ class Task
   end
 
   def -(x)
-    if x.is_a?Numeric
+    case x
+    in Numeric
       @tasks.delete_at x
-      return self
-    end
-    if x.is_a?Array
-      if x.count()==1
-        @tasks.delete_at x[0]
-        return self
-      end
-      task=@tasks[x.shift]
-      if task==nil
-        error :idx
-      end
+    in [Integer]
+      @tasks.delete_at x[0]
+    in [Integer,*]
+      task=@tasks[x.shift]||error(:idx)
       task-=x
     end
     return self
@@ -100,9 +93,10 @@ class Task
     comment_padding=' '*(digits+1+1+SETTINGS[:style][:text][status].length+1+1)
     padding=(' '*digits+colon)*depth
 
-    text   = padding+number+box_l+check+box_r+' '+name+"\n"+
-             ((@desc.is_a?String and not @desc.empty?)?
-             padding+comment_padding+'"'+comment+'"'+"\n":'')
+    text   = padding+number+box_l+check+box_r+' '+name+"\n"
+    if @desc.is_a?String and not @desc.empty?
+      text+= padding+comment_padding+'"'+comment+'"'+"\n"
+    end
     STDOUT.print text
   end
 
@@ -116,10 +110,7 @@ class Task
   end
 
   def getTask(idx)
-    task=@tasks[idx.shift]
-    if task==nil
-      error :idx
-    end
+    task=@tasks[idx.shift]||error(:idx)
   end
 
   def check

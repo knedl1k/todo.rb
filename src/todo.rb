@@ -78,12 +78,12 @@ end
 # if called, exits with an error value and error string
 def error(e)
   error={
-    idx: {message: "invalid index",               exit: 1  },
-    cmd: {message: "invalid command",             exit: 2  },
-    int: {message: "interrupted",                 exit: 3  },
-    eof: {message: "end of file",                 exit: 4  },
-    mtd: {message: "method has not been defined", exit: 5  },
-  }[e]|| {message: "unknown error",               exit: -1 } 
+    idx: {message: "invalid index",               exit: 1   },
+    cmd: {message: "invalid command",             exit: 2   },
+    int: {message: "interrupted",                 exit: 3   },
+    eof: {message: "end of file",                 exit: 4   },
+    mtd: {message: "method has not been defined", exit: 5   },
+  }[e]|| {message: "unknown error",               exit: -1  } 
   STDERR.print SETTINGS[:style][:text][:error]+error[:message]+"\n"
   if error[:exit].is_a?(Integer)then
     exit error[:exit]
