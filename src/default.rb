@@ -30,9 +30,6 @@ class Color
   def [](x)
     @color[x]
   end
-  def []=(x,y)
-    @color[x]=y
-  end
 end
 
 class Settings
@@ -77,9 +74,6 @@ class Settings
 
   def [](x)
     @settings[x]
-  end
-  def []=(x,y)
-    @settings[x]=y
   end
 end
 
